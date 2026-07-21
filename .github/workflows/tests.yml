@@ -25,3 +25,8 @@ jobs:
 
       - name: Build and test
         run: mvn -B clean verify -DskipTests=false --file Java/pom.xml
+
+      - name: Verify license notices are packaged
+        run: |
+          jar tf Java/target/AT-1.4.3.jar | grep -Fx META-INF/LICENSE
+          jar tf Java/target/AT-1.4.3.jar | grep -Fx META-INF/AUTHORS.md
