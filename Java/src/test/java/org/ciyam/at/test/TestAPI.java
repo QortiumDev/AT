@@ -467,7 +467,7 @@ public class TestAPI extends API {
 	}
 
 	@Override
-	public void payAmountToB(long amount, MachineState state) {
+	public long payAmountToB(long amount, MachineState state) {
 		byte[] bBytes = this.getB(state);
 		String address = decodeAddress(bBytes);
 
@@ -480,7 +480,7 @@ public class TestAPI extends API {
 
 		if (amount == 0) {
 			System.out.println(String.format("Skipping zero-amount payment to account %s", address));
-			return;
+			return 0L;
 		}
 
 		System.out.println(String.format("Creating PAYMENT of %s to %s", prettyAmount(amount), recipient.address));
@@ -497,6 +497,9 @@ public class TestAPI extends API {
 
 		TestTransaction testTransaction = new TestTransaction(txHash, AT_ADDRESS, recipient.address, amount);
 		addTransactionToCurrentBlock(testTransaction);
+
+		// This reference API pays exactly what was requested.
+		return amount;
 	}
 
 	@Override
