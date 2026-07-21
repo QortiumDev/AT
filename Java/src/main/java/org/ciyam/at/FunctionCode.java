@@ -1054,11 +1054,11 @@ public enum FunctionCode {
 			// Reduce amount to current balance if insufficient funds to pay full amount in value1
 			long amount = Math.min(state.getCurrentBalance(), functionData.value1);
 
-			// Actually pay
-			state.getAPI().payAmountToB(amount, state);
+			// Actually pay, and update the balance by what was really paid (the API may pay less, or nothing)
+			long paid = state.getAPI().payAmountToB(amount, state);
 
 			// Update current balance to reflect payment
-			state.setCurrentBalance(state.getCurrentBalance() - amount);
+			state.setCurrentBalance(state.getCurrentBalance() - paid);
 
 			// With no balance left, this AT is effectively finished?
 			if (state.getCurrentBalance() == 0)
@@ -1072,10 +1072,13 @@ public enum FunctionCode {
 	PAY_ALL_TO_ADDRESS_IN_B(0x0403, 0, false) {
 		@Override
 		protected void postCheckExecute(FunctionData functionData, MachineState state, short rawFunctionCode) throws ExecutionException {
-			state.getAPI().payAmountToB(state.getCurrentBalance(), state);
+			// The API may pay less than the whole balance (e.g. an unspendable remainder of an indivisible
+			// asset), so reduce the balance by what was really paid rather than assuming it reached zero.
+			long paid = state.getAPI().payAmountToB(state.getCurrentBalance(), state);
 
-			// With no balance left, this AT is effectively finished?
-			state.setCurrentBalance(0);
+			state.setCurrentBalance(state.getCurrentBalance() - paid);
+
+			// This AT has paid out everything it could, so it is effectively finished.
 			state.setIsFinished(true);
 		}
 	},
@@ -1090,11 +1093,11 @@ public enum FunctionCode {
 			// Reduce amount to previous balance if insufficient funds to pay previous balance amount
 			long amount = Math.min(state.getCurrentBalance(), state.getPreviousBalance());
 
-			// Actually pay
-			state.getAPI().payAmountToB(amount, state);
+			// Actually pay, and update the balance by what was really paid (the API may pay less, or nothing)
+			long paid = state.getAPI().payAmountToB(amount, state);
 
 			// Update current balance to reflect payment
-			state.setCurrentBalance(state.getCurrentBalance() - amount);
+			state.setCurrentBalance(state.getCurrentBalance() - paid);
 
 			// With no balance left, this AT is effectively finished?
 			if (state.getCurrentBalance() == 0)

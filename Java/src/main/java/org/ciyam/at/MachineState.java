@@ -366,6 +366,20 @@ public class MachineState {
 		this.currentBalance = currentBalance;
 	}
 
+	/**
+	 * Reduces the machine's current balance to reflect a payout the platform-specific API made outside the
+	 * stock pay opcodes.
+	 * <p>
+	 * The stock {@code PAY_*} opcodes keep the machine balance in step with what they emit by subtracting it
+	 * themselves. A platform function (via {@link API#platformSpecificPostCheckExecute}) that pays out the
+	 * AT's working asset by another route must call this so the machine balance stays exact for everything
+	 * that reads it — the step-fee gate, the serialized previous balance, and the end-of-round refund.
+	 * {@code amount} must be non-negative and no greater than the current balance.
+	 */
+	public void deductFromCurrentBalance(long amount) {
+		this.currentBalance -= amount;
+	}
+
 	public long getPreviousBalance() {
 		return this.previousBalance;
 	}

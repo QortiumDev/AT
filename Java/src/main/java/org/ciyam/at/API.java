@@ -95,8 +95,15 @@ public abstract class API {
 	/** Return AT's current balance */
 	public abstract long getCurrentBalance(MachineState state);
 
-	/** Pay passed amount, or current balance if necessary, (fee inclusive) to address in B */
-	public abstract void payAmountToB(long amount, MachineState state);
+	/**
+	 * Pay up to {@code amount} (fee inclusive) to the address in B, returning the amount actually paid.
+	 * <p>
+	 * An implementation may pay less than requested — for example clamping to a genuinely spendable
+	 * balance or rounding to a whole quantity of an indivisible asset — or pay nothing at all (returning
+	 * 0), e.g. for a non-positive request. The caller debits the machine balance by the returned amount,
+	 * never by the requested amount, so the machine balance always reflects what was really emitted.
+	 */
+	public abstract long payAmountToB(long amount, MachineState state);
 
 	/** Send 'message' in A to address in B */
 	public abstract void messageAToB(MachineState state);
