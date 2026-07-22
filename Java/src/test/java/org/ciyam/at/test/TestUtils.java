@@ -8,12 +8,14 @@ import org.ciyam.at.MachineState;
 public class TestUtils {
 
 	public static final short VERSION = 2;
+	public static final short V3_VERSION = 3;
 	public static final short NUM_CODE_PAGES = 0x0200;
 	public static final short NUM_DATA_PAGES = 0x0200;
 	public static final short NUM_CALL_STACK_PAGES = 0x0010;
 	public static final short NUM_USER_STACK_PAGES = 0x0010;
 	public static final long MIN_ACTIVATION_AMOUNT = 0L;
 	public static final byte[] HEADER_BYTES = toHeaderBytes(VERSION, NUM_CODE_PAGES, NUM_DATA_PAGES, NUM_CALL_STACK_PAGES, NUM_USER_STACK_PAGES, MIN_ACTIVATION_AMOUNT);
+	public static final byte[] V3_HEADER_BYTES = toHeaderBytes(V3_VERSION, NUM_CODE_PAGES, NUM_DATA_PAGES, NUM_CALL_STACK_PAGES, NUM_USER_STACK_PAGES, MIN_ACTIVATION_AMOUNT);
 
 	public static byte[] hexToBytes(String hex) {
 		byte[] output = new byte[hex.length() / 2];

@@ -3,12 +3,17 @@ package org.ciyam.at;
 import static org.junit.Assert.*;
 
 import org.ciyam.at.test.ExecutableTest;
+import org.ciyam.at.test.TestUtils;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
  * Tests for the 256-bit A/B arithmetic function codes (0x0140 - 0x0147).
  * <p>
  * A1..A4 / B1..B4 are treated as 256-bit unsigned integers, least significant register first.
+ * <p>
+ * These function codes require AT creation version 3, so tests here run under a version 3 header,
+ * apart from the explicit version 2 fault tests.
  */
 public class ABArithmeticFunctionCodeTests extends ExecutableTest {
 
@@ -19,6 +24,11 @@ public class ABArithmeticFunctionCodeTests extends ExecutableTest {
 
 	private static final long ALL_ONES = 0xffffffffffffffffL;
 	private static final long TOP_BIT = 0x8000000000000000L;
+
+	@Before
+	public void useVersion3Header() {
+		headerBytes = TestUtils.V3_HEADER_BYTES;
+	}
 
 	@Test
 	public void testAddAToB() throws ExecutionException {
@@ -206,6 +216,62 @@ public class ABArithmeticFunctionCodeTests extends ExecutableTest {
 
 		assertTrue(state.isFinished());
 		assertTrue(state.hadFatalError());
+	}
+
+	@Test
+	public void testAddAToBIsFatalErrorForVersion2() throws ExecutionException {
+		// Version 2 ATs must treat 0x0140 like an unknown function code
+		headerBytes = TestUtils.HEADER_BYTES;
+
+		executeFunction(FunctionCode.ADD_A_TO_B,
+				new long[] { 3L, 0L, 0L, 0L },
+				new long[] { 5L, 0L, 0L, 0L });
+
+		assertTrue(state.isFinished());
+		assertTrue(state.hadFatalError());
+
+		// Execution must have faulted before reaching GET_A_DAT / GET_B_DAT, so result addresses remain zero
+		assertEquals(0L, getData(A_RESULT_ADDRESS));
+		assertEquals(0L, getData(B_RESULT_ADDRESS));
+	}
+
+	@Test
+	public void testAddBToAIsFatalErrorForVersion2() throws ExecutionException {
+		// Version 2 ATs must treat 0x0141 like an unknown function code
+		headerBytes = TestUtils.HEADER_BYTES;
+
+		executeFunction(FunctionCode.ADD_B_TO_A,
+				new long[] { 3L, 0L, 0L, 0L },
+				new long[] { 5L, 0L, 0L, 0L });
+
+		assertTrue(state.isFinished());
+		assertTrue(state.hadFatalError());
+
+		// Execution must have faulted before reaching GET_A_DAT / GET_B_DAT, so result addresses remain zero
+		assertEquals(0L, getData(A_RESULT_ADDRESS));
+		assertEquals(0L, getData(B_RESULT_ADDRESS));
+	}
+
+	@Test
+	public void testAllArithmeticFunctionCodesAreFatalErrorForVersion2() throws ExecutionException {
+		FunctionCode[] functionCodes = new FunctionCode[] {
+				FunctionCode.ADD_A_TO_B, FunctionCode.ADD_B_TO_A,
+				FunctionCode.SUB_A_FROM_B, FunctionCode.SUB_B_FROM_A,
+				FunctionCode.MUL_A_BY_B, FunctionCode.MUL_B_BY_A,
+				FunctionCode.DIV_A_BY_B, FunctionCode.DIV_B_BY_A
+		};
+
+		for (FunctionCode functionCode : functionCodes) {
+			// Fresh buffers/API for each function code
+			beforeTest();
+			headerBytes = TestUtils.HEADER_BYTES;
+
+			executeFunction(functionCode,
+					new long[] { 3L, 0L, 0L, 0L },
+					new long[] { 5L, 0L, 0L, 0L });
+
+			assertTrue(functionCode.name() + " should be fatal error under version 2", state.hadFatalError());
+		}
 	}
 
 	/** Loads A and B registers with passed values, executes passed function, then saves A and B back into the data segment. */

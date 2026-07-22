@@ -53,6 +53,8 @@ public class MachineState {
 	static {
 		VERSIONED_CONSTANTS.put((short) 1, new VersionedConstants(256, 256, 256, 256));
 		VERSIONED_CONSTANTS.put((short) 2, new VersionedConstants(OPCODE_SIZE, VALUE_SIZE, ADDRESS_SIZE, VALUE_SIZE));
+		// Version 3 uses version 2's page-size semantics; the only difference is function code availability - see FunctionCode.minVersion
+		VERSIONED_CONSTANTS.put((short) 3, new VersionedConstants(OPCODE_SIZE, VALUE_SIZE, ADDRESS_SIZE, VALUE_SIZE));
 	}
 
 	// Set during construction

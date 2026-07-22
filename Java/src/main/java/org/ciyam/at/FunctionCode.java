@@ -653,8 +653,10 @@ public enum FunctionCode {
 	 * <code>0x0140</code><br>
 	 * B = B + A<br>
 	 * A1..A4 and B1..B4 are treated as 256-bit unsigned integers, with A1/B1 least significant. Result wraps modulo 2<sup>256</sup>.
+	 * <p>
+	 * Requires AT creation version 3 or later.
 	 */
-	ADD_A_TO_B(0x0140, 0, false) {
+	ADD_A_TO_B(0x0140, 0, false, 3) {
 		@Override
 		protected void postCheckExecute(FunctionData functionData, MachineState state, short rawFunctionCode) throws ExecutionException {
 			storeUnsigned256IntoB(state, unsigned256FromB(state).add(unsigned256FromA(state)));
@@ -665,8 +667,10 @@ public enum FunctionCode {
 	 * <code>0x0141</code><br>
 	 * A = A + B<br>
 	 * A1..A4 and B1..B4 are treated as 256-bit unsigned integers, with A1/B1 least significant. Result wraps modulo 2<sup>256</sup>.
+	 * <p>
+	 * Requires AT creation version 3 or later.
 	 */
-	ADD_B_TO_A(0x0141, 0, false) {
+	ADD_B_TO_A(0x0141, 0, false, 3) {
 		@Override
 		protected void postCheckExecute(FunctionData functionData, MachineState state, short rawFunctionCode) throws ExecutionException {
 			storeUnsigned256IntoA(state, unsigned256FromA(state).add(unsigned256FromB(state)));
@@ -677,8 +681,10 @@ public enum FunctionCode {
 	 * <code>0x0142</code><br>
 	 * B = B - A<br>
 	 * A1..A4 and B1..B4 are treated as 256-bit unsigned integers, with A1/B1 least significant. Result wraps modulo 2<sup>256</sup>.
+	 * <p>
+	 * Requires AT creation version 3 or later.
 	 */
-	SUB_A_FROM_B(0x0142, 0, false) {
+	SUB_A_FROM_B(0x0142, 0, false, 3) {
 		@Override
 		protected void postCheckExecute(FunctionData functionData, MachineState state, short rawFunctionCode) throws ExecutionException {
 			storeUnsigned256IntoB(state, unsigned256FromB(state).subtract(unsigned256FromA(state)));
@@ -689,8 +695,10 @@ public enum FunctionCode {
 	 * <code>0x0143</code><br>
 	 * A = A - B<br>
 	 * A1..A4 and B1..B4 are treated as 256-bit unsigned integers, with A1/B1 least significant. Result wraps modulo 2<sup>256</sup>.
+	 * <p>
+	 * Requires AT creation version 3 or later.
 	 */
-	SUB_B_FROM_A(0x0143, 0, false) {
+	SUB_B_FROM_A(0x0143, 0, false, 3) {
 		@Override
 		protected void postCheckExecute(FunctionData functionData, MachineState state, short rawFunctionCode) throws ExecutionException {
 			storeUnsigned256IntoA(state, unsigned256FromA(state).subtract(unsigned256FromB(state)));
@@ -702,8 +710,10 @@ public enum FunctionCode {
 	 * B = A * B<br>
 	 * A1..A4 and B1..B4 are treated as 256-bit unsigned integers, with A1/B1 least significant. Result wraps modulo 2<sup>256</sup>,
 	 * i.e. only the low 256 bits of the product are kept.
+	 * <p>
+	 * Requires AT creation version 3 or later.
 	 */
-	MUL_A_BY_B(0x0144, 0, false) {
+	MUL_A_BY_B(0x0144, 0, false, 3) {
 		@Override
 		protected void postCheckExecute(FunctionData functionData, MachineState state, short rawFunctionCode) throws ExecutionException {
 			storeUnsigned256IntoB(state, unsigned256FromA(state).multiply(unsigned256FromB(state)));
@@ -715,8 +725,10 @@ public enum FunctionCode {
 	 * A = A * B<br>
 	 * A1..A4 and B1..B4 are treated as 256-bit unsigned integers, with A1/B1 least significant. Result wraps modulo 2<sup>256</sup>,
 	 * i.e. only the low 256 bits of the product are kept.
+	 * <p>
+	 * Requires AT creation version 3 or later.
 	 */
-	MUL_B_BY_A(0x0145, 0, false) {
+	MUL_B_BY_A(0x0145, 0, false, 3) {
 		@Override
 		protected void postCheckExecute(FunctionData functionData, MachineState state, short rawFunctionCode) throws ExecutionException {
 			storeUnsigned256IntoA(state, unsigned256FromA(state).multiply(unsigned256FromB(state)));
@@ -728,8 +740,10 @@ public enum FunctionCode {
 	 * B = A / B<br>
 	 * A1..A4 and B1..B4 are treated as 256-bit unsigned integers, with A1/B1 least significant. Division is unsigned and truncating.<br>
 	 * Can also throw <code>IllegalOperationException</code> if divide-by-zero attempted.
+	 * <p>
+	 * Requires AT creation version 3 or later.
 	 */
-	DIV_A_BY_B(0x0146, 0, false) {
+	DIV_A_BY_B(0x0146, 0, false, 3) {
 		@Override
 		protected void postCheckExecute(FunctionData functionData, MachineState state, short rawFunctionCode) throws ExecutionException {
 			BigInteger divisor = unsigned256FromB(state);
@@ -746,8 +760,10 @@ public enum FunctionCode {
 	 * A = B / A<br>
 	 * A1..A4 and B1..B4 are treated as 256-bit unsigned integers, with A1/B1 least significant. Division is unsigned and truncating.<br>
 	 * Can also throw <code>IllegalOperationException</code> if divide-by-zero attempted.
+	 * <p>
+	 * Requires AT creation version 3 or later.
 	 */
-	DIV_B_BY_A(0x0147, 0, false) {
+	DIV_B_BY_A(0x0147, 0, false, 3) {
 		@Override
 		protected void postCheckExecute(FunctionData functionData, MachineState state, short rawFunctionCode) throws ExecutionException {
 			BigInteger divisor = unsigned256FromA(state);
@@ -1264,6 +1280,8 @@ public enum FunctionCode {
 	public final short value;
 	public final int paramCount;
 	public final boolean returnsValue;
+	/** Minimum AT creation version required for this function code to be available - see {@link #execute(FunctionData, MachineState, short)}. */
+	public final short minVersion;
 
 	/** First function code (inclusive) of the platform-specific range dispatched to the API - see {@link #API_PASSTHROUGH}. */
 	public static final int PLATFORM_CODE_START = 0x0500;
@@ -1274,9 +1292,14 @@ public enum FunctionCode {
 			.collect(Collectors.toMap(functionCode -> functionCode.value, functionCode -> functionCode));
 
 	private FunctionCode(int value, int paramCount, boolean returnsValue) {
+		this(value, paramCount, returnsValue, 1);
+	}
+
+	private FunctionCode(int value, int paramCount, boolean returnsValue, int minVersion) {
 		this.value = (short) value;
 		this.paramCount = paramCount;
 		this.returnsValue = returnsValue;
+		this.minVersion = (short) minVersion;
 	}
 
 	/** Returns whether <code>value</code> is within the platform-specific function code range dispatched to the API. */
@@ -1330,6 +1353,12 @@ public enum FunctionCode {
 	 * @throws ExecutionException
 	 */
 	public void execute(FunctionData functionData, MachineState state, short rawFunctionCode) throws ExecutionException {
+		// Function codes introduced after this AT's creation version must behave as if they don't exist,
+		// i.e. throw IllegalFunctionCodeException just like an unknown function code would.
+		if (state.version < this.minVersion)
+			throw new IllegalFunctionCodeException(String.format("Unknown function code 0x%04x for AT version %d (function requires version %d+)",
+					this.value, state.version, this.minVersion));
+
 		// Check passed functionData against requirements of this function
 		preExecuteCheck(functionData.paramCount, functionData.returnValueExpected);
 
