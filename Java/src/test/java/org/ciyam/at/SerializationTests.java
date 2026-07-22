@@ -111,6 +111,29 @@ public class SerializationTests extends ExecutableTest {
 		restoredState = MachineState.fromBytes(api, loggerFactory, packedState, codeBytes);
 	}
 
+	/** Test serialization to/from creation bytes for version 3 ATs. */
+	@Test
+	public void testVersion3CreationBytes() {
+		byte[] headerBytes = TestUtils.V3_HEADER_BYTES;
+		byte[] codeBytes = codeByteBuffer.array();
+		byte[] dataBytes = dataByteBuffer.array();
+
+		state = new MachineState(api, loggerFactory, headerBytes, codeBytes, dataBytes);
+		assertEquals(TestUtils.V3_VERSION, state.version);
+		packedState = state.toBytes();
+
+		byte[] creationBytes = MachineState.toCreationBytes(TestUtils.V3_VERSION, codeBytes, dataBytes, TestUtils.NUM_CALL_STACK_PAGES, TestUtils.NUM_USER_STACK_PAGES, TestUtils.MIN_ACTIVATION_AMOUNT);
+
+		MachineState restoredState = new MachineState(api, loggerFactory, creationBytes);
+		assertEquals(TestUtils.V3_VERSION, restoredState.version);
+		byte[] packedRestoredSate = restoredState.toBytes();
+
+		assertTrue(Arrays.equals(packedState, packedRestoredSate));
+
+		restoredState = MachineState.fromBytes(api, loggerFactory, packedState, codeBytes);
+		assertEquals(TestUtils.V3_VERSION, restoredState.version);
+	}
+
 	private byte[] simulate() {
 		byte[] headerBytes = TestUtils.HEADER_BYTES;
 		byte[] codeBytes = codeByteBuffer.array();

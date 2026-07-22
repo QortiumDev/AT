@@ -26,6 +26,8 @@ public class ExecutableTest {
 	public int userStackSize;
 	public byte[] packedState;
 	public byte[] codeBytes;
+	/** Header bytes used when deploying - tests can override to use a different AT version */
+	public byte[] headerBytes = TestUtils.HEADER_BYTES;
 
 	@BeforeClass
 	public static void beforeClass() {
@@ -56,7 +58,6 @@ public class ExecutableTest {
 		if (packedState == null) {
 			// First time
 			System.out.println("First execution - deploying...");
-			byte[] headerBytes = TestUtils.HEADER_BYTES;
 			codeBytes = codeByteBuffer.array();
 			byte[] dataBytes = dataByteBuffer.array();
 
