@@ -41,9 +41,26 @@ public class PlatformFunctionStepTests extends ExecutableTest {
 		assertEquals(OpCode.EXT_FUN_DAT, pricingApi.pricedOpCode);
 		assertEquals(PLATFORM_FUNCTION_CODE, pricingApi.pricedFunctionCode);
 		assertSame(state, pricingApi.pricedState);
+		assertEquals(1, pricingApi.functionPreChecks);
 		assertEquals(1, pricingApi.functionExecutions);
 		assertEquals(functionSteps + 1, state.getSteps());
 		assertEquals(initialBalance - functionSteps - 1, api.accounts.get(TestAPI.AT_ADDRESS).balance);
+	}
+
+	@Test
+	public void testPlatformPreCheckRejectsWrongSignatureBeforeExecution() {
+		FunctionPricingTestAPI pricingApi = new FunctionPricingTestAPI(TestAPI.STEPS_PER_FUNCTION_CALL);
+		api = pricingApi;
+
+		codeByteBuffer.put(OpCode.EXT_FUN_RET.value).putShort(PLATFORM_FUNCTION_CODE).putInt(0);
+		codeByteBuffer.put(OpCode.STP_IMD.value);
+
+		execute(true);
+
+		assertTrue(state.isFinished());
+		assertTrue(state.hadFatalError());
+		assertEquals(1, pricingApi.functionPreChecks);
+		assertEquals(0, pricingApi.functionExecutions);
 	}
 
 	@Test
@@ -71,10 +88,18 @@ public class PlatformFunctionStepTests extends ExecutableTest {
 		private OpCode pricedOpCode;
 		private short pricedFunctionCode;
 		private MachineState pricedState;
+		private int functionPreChecks;
 		private int functionExecutions;
 
 		private FunctionPricingTestAPI(int functionSteps) {
 			this.functionSteps = functionSteps;
+		}
+
+		@Override
+		public void platformSpecificPreExecuteCheck(int paramCount, boolean returnValueExpected,
+				MachineState state, short rawFunctionCode) throws IllegalFunctionCodeException {
+			++this.functionPreChecks;
+			super.platformSpecificPreExecuteCheck(paramCount, returnValueExpected, state, rawFunctionCode);
 		}
 
 		@Override

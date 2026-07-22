@@ -1138,9 +1138,8 @@ public enum FunctionCode {
 
 		@Override
 		protected void postCheckExecute(FunctionData functionData, MachineState state, short rawFunctionCode) throws ExecutionException {
-			// XXX somehow we need to call something like this:
-			// state.getAPI().platformSpecificPreExecuteCheck(functionData.paramCount, functionData.returnValueExpected, rawFunctionCode);
-
+			state.getAPI().platformSpecificPreExecuteCheck(functionData.paramCount,
+					functionData.returnValueExpected, state, rawFunctionCode);
 			state.getAPI().platformSpecificPostCheckExecute(functionData, state, rawFunctionCode);
 		}
 	};
