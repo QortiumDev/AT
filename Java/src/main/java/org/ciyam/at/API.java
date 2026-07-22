@@ -42,6 +42,23 @@ public abstract class API {
 	/** Returns fee for executing opcode in terms of execution "steps" */
 	public abstract int getOpCodeSteps(OpCode opcode);
 
+	/**
+	 * Returns fee for executing an external-function opcode in terms of execution "steps".
+	 * <p>
+	 * This overload is called before the machine enforces its step and balance budgets, and before
+	 * the external function executes. Platforms that need function-specific pricing can inspect the
+	 * raw function code and current machine state here. The default delegates to the opcode-only
+	 * method so existing API implementations and pricing remain unchanged.
+	 *
+	 * @param opcode external-function opcode about to execute
+	 * @param rawFunctionCode raw function code encoded after the opcode
+	 * @param state current machine state before the function is charged or executed
+	 * @return number of execution steps to charge for the function call
+	 */
+	public int getOpCodeSteps(OpCode opcode, short rawFunctionCode, MachineState state) {
+		return this.getOpCodeSteps(opcode);
+	}
+
 	/** Returns fee per execution "step" */
 	public abstract long getFeePerStep();
 

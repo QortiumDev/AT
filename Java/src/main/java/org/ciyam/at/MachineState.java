@@ -854,7 +854,15 @@ public class MachineState {
 				this.logger.debug(() -> String.format("[PC: %04x] %s", this.programCounter, nextOpCode.name()));
 
 				// Request opcode step-fee from API, apply fee to balance, etc.
-				int opcodeSteps = this.api.getOpCodeSteps(nextOpCode);
+				int opcodeSteps;
+				if (nextOpCode.value >= OpCode.EXT_FUN.value
+						&& nextOpCode.value <= OpCode.EXT_FUN_VAL.value
+						&& this.codeByteBuffer.remaining() >= Short.BYTES) {
+					short rawFunctionCode = this.codeByteBuffer.getShort(this.codeByteBuffer.position());
+					opcodeSteps = this.api.getOpCodeSteps(nextOpCode, rawFunctionCode, this);
+				} else {
+					opcodeSteps = this.api.getOpCodeSteps(nextOpCode);
+				}
 				long opcodeFee = opcodeSteps * feePerStep;
 
 				if (this.steps + opcodeSteps > maxSteps) {
