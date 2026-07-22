@@ -1,5 +1,6 @@
 package org.ciyam.at;
 
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -648,6 +649,116 @@ public enum FunctionCode {
 		}
 	},
 	/**
+	 * Add A to B (256-bit)<br>
+	 * <code>0x0140</code><br>
+	 * B = B + A<br>
+	 * A1..A4 and B1..B4 are treated as 256-bit unsigned integers, with A1/B1 least significant. Result wraps modulo 2<sup>256</sup>.
+	 */
+	ADD_A_TO_B(0x0140, 0, false) {
+		@Override
+		protected void postCheckExecute(FunctionData functionData, MachineState state, short rawFunctionCode) throws ExecutionException {
+			storeUnsigned256IntoB(state, unsigned256FromB(state).add(unsigned256FromA(state)));
+		}
+	},
+	/**
+	 * Add B to A (256-bit)<br>
+	 * <code>0x0141</code><br>
+	 * A = A + B<br>
+	 * A1..A4 and B1..B4 are treated as 256-bit unsigned integers, with A1/B1 least significant. Result wraps modulo 2<sup>256</sup>.
+	 */
+	ADD_B_TO_A(0x0141, 0, false) {
+		@Override
+		protected void postCheckExecute(FunctionData functionData, MachineState state, short rawFunctionCode) throws ExecutionException {
+			storeUnsigned256IntoA(state, unsigned256FromA(state).add(unsigned256FromB(state)));
+		}
+	},
+	/**
+	 * Subtract A from B (256-bit)<br>
+	 * <code>0x0142</code><br>
+	 * B = B - A<br>
+	 * A1..A4 and B1..B4 are treated as 256-bit unsigned integers, with A1/B1 least significant. Result wraps modulo 2<sup>256</sup>.
+	 */
+	SUB_A_FROM_B(0x0142, 0, false) {
+		@Override
+		protected void postCheckExecute(FunctionData functionData, MachineState state, short rawFunctionCode) throws ExecutionException {
+			storeUnsigned256IntoB(state, unsigned256FromB(state).subtract(unsigned256FromA(state)));
+		}
+	},
+	/**
+	 * Subtract B from A (256-bit)<br>
+	 * <code>0x0143</code><br>
+	 * A = A - B<br>
+	 * A1..A4 and B1..B4 are treated as 256-bit unsigned integers, with A1/B1 least significant. Result wraps modulo 2<sup>256</sup>.
+	 */
+	SUB_B_FROM_A(0x0143, 0, false) {
+		@Override
+		protected void postCheckExecute(FunctionData functionData, MachineState state, short rawFunctionCode) throws ExecutionException {
+			storeUnsigned256IntoA(state, unsigned256FromA(state).subtract(unsigned256FromB(state)));
+		}
+	},
+	/**
+	 * Multiply A by B (256-bit)<br>
+	 * <code>0x0144</code><br>
+	 * B = A * B<br>
+	 * A1..A4 and B1..B4 are treated as 256-bit unsigned integers, with A1/B1 least significant. Result wraps modulo 2<sup>256</sup>,
+	 * i.e. only the low 256 bits of the product are kept.
+	 */
+	MUL_A_BY_B(0x0144, 0, false) {
+		@Override
+		protected void postCheckExecute(FunctionData functionData, MachineState state, short rawFunctionCode) throws ExecutionException {
+			storeUnsigned256IntoB(state, unsigned256FromA(state).multiply(unsigned256FromB(state)));
+		}
+	},
+	/**
+	 * Multiply B by A (256-bit)<br>
+	 * <code>0x0145</code><br>
+	 * A = A * B<br>
+	 * A1..A4 and B1..B4 are treated as 256-bit unsigned integers, with A1/B1 least significant. Result wraps modulo 2<sup>256</sup>,
+	 * i.e. only the low 256 bits of the product are kept.
+	 */
+	MUL_B_BY_A(0x0145, 0, false) {
+		@Override
+		protected void postCheckExecute(FunctionData functionData, MachineState state, short rawFunctionCode) throws ExecutionException {
+			storeUnsigned256IntoA(state, unsigned256FromA(state).multiply(unsigned256FromB(state)));
+		}
+	},
+	/**
+	 * Divide A by B (256-bit)<br>
+	 * <code>0x0146</code><br>
+	 * B = A / B<br>
+	 * A1..A4 and B1..B4 are treated as 256-bit unsigned integers, with A1/B1 least significant. Division is unsigned and truncating.<br>
+	 * Can also throw <code>IllegalOperationException</code> if divide-by-zero attempted.
+	 */
+	DIV_A_BY_B(0x0146, 0, false) {
+		@Override
+		protected void postCheckExecute(FunctionData functionData, MachineState state, short rawFunctionCode) throws ExecutionException {
+			BigInteger divisor = unsigned256FromB(state);
+
+			if (divisor.signum() == 0)
+				throw new IllegalOperationException("Divide by zero");
+
+			storeUnsigned256IntoB(state, unsigned256FromA(state).divide(divisor));
+		}
+	},
+	/**
+	 * Divide B by A (256-bit)<br>
+	 * <code>0x0147</code><br>
+	 * A = B / A<br>
+	 * A1..A4 and B1..B4 are treated as 256-bit unsigned integers, with A1/B1 least significant. Division is unsigned and truncating.<br>
+	 * Can also throw <code>IllegalOperationException</code> if divide-by-zero attempted.
+	 */
+	DIV_B_BY_A(0x0147, 0, false) {
+		@Override
+		protected void postCheckExecute(FunctionData functionData, MachineState state, short rawFunctionCode) throws ExecutionException {
+			BigInteger divisor = unsigned256FromA(state);
+
+			if (divisor.signum() == 0)
+				throw new IllegalOperationException("Divide by zero");
+
+			storeUnsigned256IntoA(state, unsigned256FromB(state).divide(divisor));
+		}
+	},
+	/**
 	 * MD5 data into B<br>
 	 * <code>0x0200 start-addr byte-length</code><br>
 	 * MD5 hash stored in B1 and B2. B3 and B4 are zeroed.
@@ -1128,7 +1239,13 @@ public enum FunctionCode {
 	/**
 	 * <code>0x0500 - 0x06ff</code><br>
 	 * Platform-specific functions.<br>
-	 * These are passed through to the API
+	 * <p>
+	 * Function codes in the range {@link #PLATFORM_CODE_START} to {@link #PLATFORM_CODE_END} (inclusive) are not implemented,
+	 * or even enumerated, by this library. Instead they are dispatched to the platform's {@link API} implementation:
+	 * signature checks via {@link API#platformSpecificPreExecuteCheck(int, boolean, MachineState, short)}
+	 * and execution via {@link API#platformSpecificPostCheckExecute(FunctionData, MachineState, short)},
+	 * both receiving the raw function code. This allows platforms to add whole families of function codes
+	 * (e.g. chain-query functions, persistent-map functions) without requiring a new release of this library.
 	 */
 	API_PASSTHROUGH(0x0500, 0, false) {
 		@Override
@@ -1148,6 +1265,11 @@ public enum FunctionCode {
 	public final int paramCount;
 	public final boolean returnsValue;
 
+	/** First function code (inclusive) of the platform-specific range dispatched to the API - see {@link #API_PASSTHROUGH}. */
+	public static final int PLATFORM_CODE_START = 0x0500;
+	/** Last function code (inclusive) of the platform-specific range dispatched to the API - see {@link #API_PASSTHROUGH}. */
+	public static final int PLATFORM_CODE_END = 0x06ff;
+
 	private static final Map<Short, FunctionCode> map = Arrays.stream(FunctionCode.values())
 			.collect(Collectors.toMap(functionCode -> functionCode.value, functionCode -> functionCode));
 
@@ -1157,12 +1279,35 @@ public enum FunctionCode {
 		this.returnsValue = returnsValue;
 	}
 
+	/** Returns whether <code>value</code> is within the platform-specific function code range dispatched to the API. */
+	public static boolean isPlatformFunctionCode(int value) {
+		return value >= PLATFORM_CODE_START && value <= PLATFORM_CODE_END;
+	}
+
 	public static FunctionCode valueOf(int value) {
 		// Platform-specific?
-		if (value >= 0x0500 && value <= 0x06ff)
+		if (isPlatformFunctionCode(value))
 			return API_PASSTHROUGH;
 
 		return map.get((short) value);
+	}
+
+	/** Returns whether this function is one of the built-in hashing functions, which platforms may price separately - see {@link API#getHashingFunctionSteps}. */
+	public boolean isHashingFunction() {
+		switch (this) {
+			case MD5_INTO_B:
+			case CHECK_MD5_WITH_B:
+			case RMD160_INTO_B:
+			case CHECK_RMD160_WITH_B:
+			case SHA256_INTO_B:
+			case CHECK_SHA256_WITH_B:
+			case HASH160_INTO_B:
+			case CHECK_HASH160_WITH_B:
+				return true;
+
+			default:
+				return false;
+		}
 	}
 
 	public void preExecuteCheck(int paramCount, boolean returnValueExpected) throws ExecutionException {
@@ -1237,6 +1382,51 @@ public enum FunctionCode {
 
 		if (address < 0L || address > maxAddress)
 			throw new ExecutionException(String.format("%s data address %d out of bounds: 0 to %d", this.name(), address, maxAddress));
+	}
+
+	/** Mask used to wrap 256-bit arithmetic results, i.e. 2<sup>256</sup> - 1. */
+	private static final BigInteger UNSIGNED_256_MASK = BigInteger.ONE.shiftLeft(256).subtract(BigInteger.ONE);
+
+	/** Returns A1 through A4 as an unsigned 256-bit integer, treating A1 as least significant. */
+	protected static BigInteger unsigned256FromA(MachineState state) {
+		return toUnsigned256(state.a1, state.a2, state.a3, state.a4);
+	}
+
+	/** Returns B1 through B4 as an unsigned 256-bit integer, treating B1 as least significant. */
+	protected static BigInteger unsigned256FromB(MachineState state) {
+		return toUnsigned256(state.b1, state.b2, state.b3, state.b4);
+	}
+
+	/** Returns four 64-bit values as an unsigned 256-bit integer, treating value1 as least significant. */
+	private static BigInteger toUnsigned256(long value1, long value2, long value3, long value4) {
+		ByteBuffer byteBuffer = ByteBuffer.allocate(4 * MachineState.VALUE_SIZE);
+
+		byteBuffer.putLong(value4);
+		byteBuffer.putLong(value3);
+		byteBuffer.putLong(value2);
+		byteBuffer.putLong(value1);
+
+		return new BigInteger(1, byteBuffer.array());
+	}
+
+	/** Stores low 256 bits of <code>value</code> into A1 through A4, treating A1 as least significant. */
+	protected static void storeUnsigned256IntoA(MachineState state, BigInteger value) {
+		BigInteger wrapped = value.and(UNSIGNED_256_MASK);
+
+		state.a1 = wrapped.longValue();
+		state.a2 = wrapped.shiftRight(64).longValue();
+		state.a3 = wrapped.shiftRight(128).longValue();
+		state.a4 = wrapped.shiftRight(192).longValue();
+	}
+
+	/** Stores low 256 bits of <code>value</code> into B1 through B4, treating B1 as least significant. */
+	protected static void storeUnsigned256IntoB(MachineState state, BigInteger value) {
+		BigInteger wrapped = value.and(UNSIGNED_256_MASK);
+
+		state.b1 = wrapped.longValue();
+		state.b2 = wrapped.shiftRight(64).longValue();
+		state.b3 = wrapped.shiftRight(128).longValue();
+		state.b4 = wrapped.shiftRight(192).longValue();
 	}
 
 }
