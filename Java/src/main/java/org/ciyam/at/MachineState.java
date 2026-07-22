@@ -859,7 +859,12 @@ public class MachineState {
 						&& nextOpCode.value <= OpCode.EXT_FUN_VAL.value
 						&& this.codeByteBuffer.remaining() >= Short.BYTES) {
 					short rawFunctionCode = this.codeByteBuffer.getShort(this.codeByteBuffer.position());
-					opcodeSteps = this.api.getOpCodeSteps(nextOpCode, rawFunctionCode, this);
+					FunctionCode functionCode = FunctionCode.valueOf(rawFunctionCode);
+
+					if (functionCode != null && functionCode.isHashingFunction())
+						opcodeSteps = this.api.getHashingFunctionSteps(nextOpCode, functionCode, this);
+					else
+						opcodeSteps = this.api.getOpCodeSteps(nextOpCode, rawFunctionCode, this);
 				} else {
 					opcodeSteps = this.api.getOpCodeSteps(nextOpCode);
 				}

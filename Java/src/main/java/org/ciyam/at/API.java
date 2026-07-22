@@ -59,6 +59,24 @@ public abstract class API {
 		return this.getOpCodeSteps(opcode);
 	}
 
+	/**
+	 * Returns fee for executing one of the built-in hashing functions in terms of execution "steps".
+	 * <p>
+	 * This is called instead of {@link #getOpCodeSteps(OpCode, short, MachineState)} when the external-function
+	 * opcode about to execute calls one of the built-in hashing functions (see {@link FunctionCode#isHashingFunction()}),
+	 * allowing platforms to charge hashing differently from the flat per-function-call cost without matching raw
+	 * function code values themselves. The default delegates to the general external-function overload, which in turn
+	 * defaults to the opcode-only method, so existing API implementations and pricing remain unchanged.
+	 *
+	 * @param opcode external-function opcode about to execute
+	 * @param functionCode built-in hashing function about to execute
+	 * @param state current machine state before the function is charged or executed
+	 * @return number of execution steps to charge for the function call
+	 */
+	public int getHashingFunctionSteps(OpCode opcode, FunctionCode functionCode, MachineState state) {
+		return this.getOpCodeSteps(opcode, functionCode.value, state);
+	}
+
 	/** Returns fee per execution "step" */
 	public abstract long getFeePerStep();
 
